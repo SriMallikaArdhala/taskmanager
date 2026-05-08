@@ -1,0 +1,5 @@
+taskmanager-backend/target/
+taskmanager-frontend/node_modules/
+taskmanager-frontend/dist/
+*.class
+.env
