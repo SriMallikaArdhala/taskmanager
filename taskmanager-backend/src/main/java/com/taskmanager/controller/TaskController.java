@@ -4,7 +4,6 @@ import com.taskmanager.dto.request.TaskRequest;
 import com.taskmanager.dto.response.TaskResponse;
 import com.taskmanager.entity.User;
 import com.taskmanager.service.*;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.*;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -19,6 +18,14 @@ public class TaskController {
 
     private final TaskService taskService;
     private final AuthService authService;
+
+    // NEW: Get all tasks assigned to the current logged-in user across all projects
+    @GetMapping("/tasks/my")
+    public ResponseEntity<List<TaskResponse>> getMyTasks(
+            @AuthenticationPrincipal UserDetails userDetails) {
+        User user = authService.getCurrentUser(userDetails.getUsername());
+        return ResponseEntity.ok(taskService.getMyTasks(user));
+    }
 
     @PostMapping("/projects/{projectId}/tasks")
     public ResponseEntity<TaskResponse> createTask(
@@ -37,8 +44,8 @@ public class TaskController {
         return ResponseEntity.ok(taskService.getProjectTasks(projectId, user));
     }
 
-    // FIX: Removed @Valid — validation now handled in service layer
-    // so members can submit status-only updates without triggering validation errors
+    // FIX: Removed @Valid — validation handled in service layer
+    // so members can submit status-only updates without triggering errors
     @PutMapping("/tasks/{taskId}")
     public ResponseEntity<TaskResponse> updateTask(
             @PathVariable Long taskId,

@@ -23,6 +23,14 @@ public class TaskService {
     private final ProjectMemberRepository memberRepository;
     private final UserRepository userRepository;
 
+    // NEW: Returns all tasks assigned to the current user across all projects
+    public List<TaskResponse> getMyTasks(User user) {
+        return taskRepository.findByAssignedToId(user.getId())
+                .stream()
+                .map(this::toResponse)
+                .collect(Collectors.toList());
+    }
+
     @Transactional
     public TaskResponse createTask(Long projectId, TaskRequest request, User creator) {
         validateAdminAccess(projectId, creator);
@@ -66,7 +74,8 @@ public class TaskService {
             throw new CustomExceptions.AccessDeniedException("You are not a member of this project");
         }
 
-        boolean isAdmin = memberRepository.findByProjectIdAndUserIdAndRole(projectId, user.getId(), Role.ADMIN).isPresent();
+        boolean isAdmin = memberRepository.findByProjectIdAndUserIdAndRole(
+                projectId, user.getId(), Role.ADMIN).isPresent();
 
         List<Task> tasks = isAdmin
                 ? taskRepository.findByProjectId(projectId)
@@ -82,7 +91,8 @@ public class TaskService {
 
         boolean isAdmin = memberRepository.findByProjectIdAndUserIdAndRole(
                 task.getProject().getId(), user.getId(), Role.ADMIN).isPresent();
-        boolean isAssignee = task.getAssignedTo() != null && task.getAssignedTo().getId().equals(user.getId());
+        boolean isAssignee = task.getAssignedTo() != null
+                && task.getAssignedTo().getId().equals(user.getId());
 
         if (!isAdmin && !isAssignee) {
             throw new CustomExceptions.AccessDeniedException("You cannot update this task");
@@ -144,7 +154,9 @@ public class TaskService {
                 .assignedToName(task.getAssignedTo() != null ? task.getAssignedTo().getName() : null)
                 .createdByName(task.getCreatedBy().getName())
                 .createdAt(task.getCreatedAt())
-                .overdue(task.getDueDate() != null && task.getDueDate().isBefore(LocalDate.now()) && task.getStatus() != TaskStatus.DONE)
+                .overdue(task.getDueDate() != null
+                        && task.getDueDate().isBefore(LocalDate.now())
+                        && task.getStatus() != TaskStatus.DONE)
                 .build();
     }
 }
