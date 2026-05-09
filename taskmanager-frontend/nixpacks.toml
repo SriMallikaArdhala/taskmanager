@@ -1,5 +1,5 @@
 [phases.setup]
-nixPkgs = ["nodejs_18"]
+nixPkgs = ["nodejs_20"]
 
 [phases.install]
 cmds = ["npm install"]
@@ -8,4 +8,4 @@ cmds = ["npm install"]
 cmds = ["npm run build"]
 
 [start]
-cmd = "npx serve dist -p $PORT --no-clipboard"
+cmd = "npx serve@latest dist -p $PORT --no-clipboard"
